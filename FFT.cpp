@@ -2,6 +2,7 @@
 #include <complex>
 #include <vector>
 #include <cmath>
+#include <chrono>
 
 using namespace std;
 
@@ -69,21 +70,31 @@ void fftUnrolled(vector<complex<double>>& a, bool invert) {
 }
 
 int main() {
-    // Example usage of FFT
-    vector<complex<double>> data = {1, 2, 3, 4, 5, 6, 7, 8};
-    
-    cout << "Original FFT:" << endl;
-    vector<complex<double>> dataCopy = data; // Copy data to keep original intact
-    fft(dataCopy, false); // Forward FFT
-    for (auto& val : dataCopy) {
-        cout << val << endl;
+    // Larger example usage of FFT for performance measurement
+    int N = 1 << 12; // Example size, e.g., 4096
+    vector<complex<double>> data(N);
+    for (int i = 0; i < N; ++i) {
+        data[i] = rand() / (RAND_MAX + 1.0);
     }
 
-    cout << "\nFFT with Loop Unrolling:" << endl;
-    fftUnrolled(data, false); // Forward FFT with loop unrolling
-    for (auto& val : data) {
-        cout << val << endl;
+    // Measure execution time for the original FFT
+    auto start = std::chrono::high_resolution_clock::now();
+    fft(data, false); // Forward FFT
+    auto finish = std::chrono::high_resolution_clock::now();
+    auto durationOriginal = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
+    cout << "Original FFT Execution Time: " << durationOriginal << " microseconds" << endl;
+
+    // Reset data for fairness in measurement
+    for (int i = 0; i < N; ++i) {
+        data[i] = rand() / (RAND_MAX + 1.0);
     }
+
+    // Measure execution time for the FFT with loop unrolling
+    start = std::chrono::high_resolution_clock::now();
+    fftUnrolled(data, false); // Forward FFT with loop unrolling
+    finish = std::chrono::high_resolution_clock::now();
+    auto durationUnrolled = std::chrono::duration_cast<std::chrono::microseconds>(finish - start).count();
+    cout << "FFT with Loop Unrolling Execution Time: " << durationUnrolled << " microseconds" << endl;
 
     return 0;
 }
